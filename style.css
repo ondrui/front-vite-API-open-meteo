@@ -1,0 +1,8 @@
+.line {
+  border: 3px solid teal;
+  border-radius: 5px;
+  margin 10px 0;
+}
+#container {
+  height: 600px;
+}

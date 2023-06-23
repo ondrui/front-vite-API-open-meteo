@@ -28,12 +28,12 @@ const loadData = async () => {
   try {
     const res = await fetch("http://localhost:3002/api");
     const datasets = await res.json();
-    const arrData = modelsName.map((elem) => {
-      const arr = datasets.data
-        .filter((f) => f.model === elem)
-        .map(({ runtime, temp }) => [Date.parse(runtime), temp]);
-      return { data: arr, name: elem };
-    });
+    // const arrData = modelsName.map((elem) => {
+    //   const arr = datasets.data
+    //     .filter((f) => f.model === elem)
+    //     .map(({ runtime, temp }) => [Date.parse(runtime), temp]);
+    //   return { data: arr, name: elem };
+    // });
 
     const callback = (acc, { model, request_time, temp, runtime }) => {
       if (!acc[model]) acc[model] = {};
@@ -41,6 +41,7 @@ const loadData = async () => {
       acc[model][request_time].push([Date.parse(runtime), temp]);
       return acc;
     };
+    // { ...acc, [firstLetter]: [...(acc[firstLetter] || []), cur] };
 
     const resObj = datasets.data.reduce(callback, {});
 
@@ -136,9 +137,3 @@ const loadData = async () => {
 };
 
 loadData();
-const obj = {
-  request_time: "2023-06-20T06:00:02.000Z",
-  runtime: "2023-06-22T06:00:00.000Z",
-  temp: 18,
-  model: "hmn",
-};
