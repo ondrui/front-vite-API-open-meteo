@@ -18,27 +18,24 @@ HighCL(Highcharts);
 
 // Generate the chart
 const loadData = async () => {
-  const modelsName = [
-    "hmn",
-    "best_match",
-    "icon_global",
-    "gfs_global",
-    "ecmwf_ifs04",
-  ];
+  const body = {
+    model: "hmn",
+    forecast_time: "2023-06-27 10:00:00",
+  };
   try {
-    const res = await fetch("http://localhost:3002/api");
+    const res = await fetch("http://localhost:3002/forecast_time", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json;charset=utf-8",
+      },
+      body: JSON.stringify(body),
+    });
     const datasets = await res.json();
-    // const arrData = modelsName.map((elem) => {
-    //   const arr = datasets.data
-    //     .filter((f) => f.model === elem)
-    //     .map(({ runtime, temp }) => [Date.parse(runtime), temp]);
-    //   return { data: arr, name: elem };
-    // });
 
-    const callback = (acc, { model, request_time, temp, runtime }) => {
+    const callback = (acc, { model, runtime, temp, forecast_time }) => {
       if (!acc[model]) acc[model] = {};
-      if (!acc[model][request_time]) acc[model][request_time] = [];
-      acc[model][request_time].push([Date.parse(runtime), temp]);
+      if (!acc[model][runtime]) acc[model][runtime] = [];
+      acc[model][runtime].push([Date.parse(forecast_time), temp]);
       return acc;
     };
     // { ...acc, [firstLetter]: [...(acc[firstLetter] || []), cur] };
