@@ -23,13 +23,14 @@ const loadData = async () => {
     forecast_time: "2023-06-27 10:00:00",
   };
   try {
-    const res = await fetch("http://localhost:3002/forecast_time", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-      body: JSON.stringify(body),
-    });
+    const res = await fetch("/datasets.json");
+    // const res = await fetch("http://localhost:3002/models", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json;charset=utf-8",
+    //   },
+    //   body: JSON.stringify(body),
+    // });
     const datasets = await res.json();
 
     const callback = (acc, { model, runtime, temp, forecast_time }) => {
@@ -91,6 +92,9 @@ const loadData = async () => {
       title: {
         text: "Графики температуры по различным моделям",
       },
+      legend: {
+        labelFormat: '<span style="color:{color}">{name}</span>',
+      },
       tooltip: {
         split: true,
         crosshairs: true,
@@ -122,6 +126,9 @@ const loadData = async () => {
       plotOptions: {
         series: {
           marker: {
+            enabled: false,
+          },
+          label: {
             enabled: false,
           },
         },

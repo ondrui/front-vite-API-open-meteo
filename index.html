@@ -10,19 +10,25 @@
     <div id="container"></div>
     <hr class="line">
     <form method="post" action="http://localhost:3000">
-      <div>
         <label for="model">Модель</label>
-        <input type="text" id="model" name="model">
-        <label for="requestTime">Модель</label>
-        <input type="date" id="requestTime" name="requestTime">
-      </div>
-      <div>
-        <label for="model">Модель</label>
-        <input type="text" id="model" name="model">
-        <label for="requestTime">Модель</label>
-        <input type="date" id="requestTime" name="requestTime">
-      </div>
-      <button>Submit</button>
+        <select name="select">
+          <option value="hmn">hmn</option>
+          <option value="best_match">best_match</option>
+          <option value="ecmwf_ifs04">ecmwf_ifs04</option>
+          <option value="gem_global">gem_global</option>
+          <option value="gfs_global">gfs_global</option>
+          <option value="icon_eu">icon_eu</option>
+          <option value="icon_global">icon_global</option>
+          <option value="jma_gsm">jma_gsm</option>
+          <option value="meteofrance_arpege_europe">meteofrance_arpege_europe</option>
+          <option value="meteofrance_arpege_world">meteofrance_arpege_world</option>
+          <option value="value2" selected>Все</option>
+        </select>
+        <label for="runtime">Время загрузки данных</label>
+        <input type="date" id="runtime" name="runtime">
+        <label for="forecast_time">Временная точка прогноза</label>
+        <input type="date" id="forecast_time" name="forecast_time">
+        <span>&#43;</span>
     </form>
     <script type="module" src="/main.js"></script>
   </body>
