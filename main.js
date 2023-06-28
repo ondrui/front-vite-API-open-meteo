@@ -20,9 +20,10 @@ HighCL(Highcharts);
 const loadData = async () => {
   const body = {
     model: "hmn",
-    forecast_time: "2023-06-27 10:00:00",
+    forecast_time: "2023-06-28 14:00:00",
   };
   try {
+    // const res = await fetch("http://localhost:3002/models");
     const res = await fetch("http://localhost:3002/forecast_time", {
       method: "POST",
       headers: {
@@ -40,7 +41,7 @@ const loadData = async () => {
     };
     // { ...acc, [firstLetter]: [...(acc[firstLetter] || []), cur] };
 
-    const resObj = datasets.data.reduce(callback, {});
+    const resObj = datasets.reduce(callback, {});
 
     const getValues = (object, parentKeys = []) => {
       return Object.assign(
@@ -91,6 +92,9 @@ const loadData = async () => {
       title: {
         text: "Графики температуры по различным моделям",
       },
+      legend: {
+        labelFormat: '<span style="color:{color}">{name}</span>',
+      },
       tooltip: {
         split: true,
         crosshairs: true,
@@ -124,12 +128,15 @@ const loadData = async () => {
           marker: {
             enabled: false,
           },
+          label: {
+            enabled: false,
+          },
         },
       },
       series: finished,
     });
   } catch (error) {
-    console.log("Error! Could not reach the server. " + error);
+    console.log("Error!" + error);
   }
 };
 
