@@ -6,11 +6,9 @@ import Accessibility from "highcharts/modules/accessibility";
 import SeriesLabel from "highcharts/modules/series-label";
 import HighCL from "highcharts/themes/high-contrast-light";
 import moment from "moment";
-import "moment/dist/locale/ru.js";
 import * as mTZ from "moment-timezone";
 
 window.moment = moment;
-moment.locale("ru");
 mTZ();
 
 Exporting(Highcharts);
@@ -100,7 +98,14 @@ const loadData = async () => {
       tooltip: {
         shared: true,
         formatter: function () {
-          const dateString = moment(this.x).format("DD-MM-YY HH:mm");
+          let date = new Date(this.x);
+          let formatter = new Intl.DateTimeFormat("ru", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+          })
           const arrMod = this.points
             .sort(function (a, b) {
               // Turn your strings into dates, and then subtract them
@@ -114,7 +119,7 @@ const loadData = async () => {
               (point) =>
                 `<span style="color:${point.series.color}; font-size: 15px">\u25CF </span>${point.series.name} температура 2м: <b>${point.y} °C</b><br/>`
             );
-          const arr = [`${dateString}<br/>`, ...arrMod];
+          const arr = [`${formatter.format(date)}<br/>`, ...arrMod];
           return arr.join("");
         },
         crosshairs: true,
