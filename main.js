@@ -6,9 +6,11 @@ import Accessibility from "highcharts/modules/accessibility";
 import SeriesLabel from "highcharts/modules/series-label";
 import HighCL from "highcharts/themes/high-contrast-light";
 import moment from "moment";
+import "moment/dist/locale/ru.js";
 import * as mTZ from "moment-timezone";
 
 window.moment = moment;
+moment.locale("ru");
 mTZ();
 
 Exporting(Highcharts);
@@ -20,7 +22,7 @@ HighCL(Highcharts);
 const loadData = async () => {
   const body = {
     model: "hmn",
-    forecast_time: "2023-06-29 11:00:00",
+    forecast_time: "2023-06-22 11:00:00",
   };
   try {
     // const res = await fetch("http://localhost:3002/models");
@@ -98,7 +100,7 @@ const loadData = async () => {
       tooltip: {
         shared: true,
         formatter: function () {
-          const time = new Highcharts.Time();
+          const dateString = moment(this.x).format("DD-MM-YY HH:mm");
           const arrMod = this.points
             .sort(function (a, b) {
               // Turn your strings into dates, and then subtract them
@@ -112,11 +114,7 @@ const loadData = async () => {
               (point) =>
                 `<span style="color:${point.series.color}; font-size: 15px">\u25CF </span>${point.series.name} температура 2м: <b>${point.y} °C</b><br/>`
             );
-          const arr = [
-            `${time.dateFormat(
-              "%d-%b-%Y, %H:%M", this.x)}<br/>`,
-            ...arrMod,
-          ];
+          const arr = [`${dateString}<br/>`, ...arrMod];
           return arr.join("");
         },
         crosshairs: true,
