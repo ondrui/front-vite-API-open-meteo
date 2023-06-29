@@ -20,7 +20,7 @@ HighCL(Highcharts);
 const loadData = async () => {
   const body = {
     model: "hmn",
-    forecast_time: "2023-06-28 14:00:00",
+    forecast_time: "2023-06-29 11:00:00",
   };
   try {
     // const res = await fetch("http://localhost:3002/models");
@@ -55,7 +55,7 @@ const loadData = async () => {
     };
 
     const finished = Object.entries(getValues(resObj)).map(([key, value]) => {
-      return { data: value, name: key };
+      return { data: value, name: key.slice(0, -5) };
     });
 
     const options = {
@@ -93,15 +93,33 @@ const loadData = async () => {
         text: "Графики температуры по различным моделям",
       },
       legend: {
-        labelFormat: '<span style="color:{color}">{name}</span>',
+        labelFormat: `<span style="color:{color}">{name}</span>`,
       },
       tooltip: {
-        split: true,
+        shared: true,
+        formatter: function () {
+          const time = new Highcharts.Time();
+          const arrMod = this.points
+            .sort(function (a, b) {
+              // Turn your strings into dates, and then subtract them
+              // to get a value that is either negative, positive, or zero.
+              return (
+                new Date(b.series.name.slice(4)) -
+                new Date(a.series.name.slice(4))
+              );
+            })
+            .map(
+              (point) =>
+                `<span style="color:${point.series.color}; font-size: 15px">\u25CF </span>${point.series.name} температура 2м: <b>${point.y} °C</b><br/>`
+            );
+          const arr = [
+            `${time.dateFormat(
+              "%d-%b-%Y, %H:%M", this.x)}<br/>`,
+            ...arrMod,
+          ];
+          return arr.join("");
+        },
         crosshairs: true,
-        xDateFormat: "%d-%b-%Y, %H:%M",
-        pointFormat:
-          '<span style="color:{series.color}; font-size: 15px">\u25CF </span>{series.name} температура 2м: <b>{point.y}</b><br/>',
-        valueSuffix: "°C",
       },
       xAxis: {
         type: "datetime",
