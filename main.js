@@ -16,20 +16,30 @@ Accessibility(Highcharts);
 SeriesLabel(Highcharts);
 HighCL(Highcharts);
 
+const form = document.getElementById("myForm");
+const dataForm = document.forms.myForm.elements;
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const selectValue = dataForm.model.value;
+  let formData = new FormData(form);
+  console.log(dataForm);
+  console.log(form);
+  console.log(selectValue);
+  loadData(formData);
+});
+
 // Generate the chart
-const loadData = async () => {
+const loadData = async (data) => {
   const body = {
-    model: "hmn",
-    forecast_time: "2023-06-22 11:00:00",
+    model: "ecmwf_ifs04",
+    forecast_time: "2023-06-30 07:00:00",
   };
   try {
     // const res = await fetch("http://localhost:3002/models");
     const res = await fetch("http://localhost:3002/forecast_time", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-      body: JSON.stringify(body),
+      body: data,
     });
     const datasets = await res.json();
 
@@ -61,6 +71,7 @@ const loadData = async () => {
     const options = {
       dateStyle: "medium",
       timeStyle: "short",
+      timeZone: "UTC",
     };
 
     Highcharts.setOptions({
@@ -84,7 +95,7 @@ const loadData = async () => {
 
     Highcharts.chart("container", {
       time: {
-        timezone: "Europe/Moscow",
+        timezone: "UTC",
       },
       chart: {
         type: "spline",
@@ -99,13 +110,14 @@ const loadData = async () => {
         shared: true,
         formatter: function () {
           let date = new Date(this.x);
-          let formatter = new Intl.DateTimeFormat("ru", {
+          let formatter = {
             year: "numeric",
             month: "short",
             day: "numeric",
             hour: "numeric",
             minute: "numeric",
-          })
+            timeZone: "UTC",
+          };
           const arrMod = this.points
             .sort(function (a, b) {
               // Turn your strings into dates, and then subtract them
@@ -119,7 +131,10 @@ const loadData = async () => {
               (point) =>
                 `<span style="color:${point.series.color}; font-size: 15px">\u25CF </span>${point.series.name} температура 2м: <b>${point.y} °C</b><br/>`
             );
-          const arr = [`${formatter.format(date)}<br/>`, ...arrMod];
+          const arr = [
+            `${date.toLocaleString("ru", formatter)}<br/>`,
+            ...arrMod,
+          ];
           return arr.join("");
         },
         crosshairs: true,
@@ -160,5 +175,3 @@ const loadData = async () => {
     console.log("Error!" + error);
   }
 };
-
-loadData();
