@@ -11,31 +11,30 @@
     <hr class="line" />
     <h4>Время указано в UTC</h4>
     <form id="myForm" name="myForm">
-      <div>
-        <label for="model">Модель</label>
-        <select name="model">
-          <option value="hmn">hmn</option>
-          <option value="best_match">best_match</option>
-          <option value="ecmwf_ifs04">ecmwf_ifs04</option>
-          <option value="gem_global">gem_global</option>
-          <option value="gfs_global">gfs_global</option>
-          <option value="icon_eu">icon_eu</option>
-          <option value="icon_global">icon_global</option>
-          <option value="jma_gsm">jma_gsm</option>
-          <option value="meteofrance_arpege_europe">
-            meteofrance_arpege_europe
-          </option>
-          <option value="meteofrance_arpege_world">
-            meteofrance_arpege_world
-          </option>
-          <option value="all" selected>Все</option>
-        </select>
-        <label for="runtime">Время загрузки данных</label>
-        <input type="time" step="60" id="runtime" name="runtime" />
-        <label for="forecast_time">Временная точка прогноза</label>
-        <input type="datetime-local" id="forecast_time" name="forecast_time" />
-        <span>&#43;</span>
-      </div>
+      <label for="model">Модель</label>
+      <select name="model">
+        <option value="hmn">hmn</option>
+        <option value="ecmwf_balchug">ecmwf_balchug</option>
+        <option value="best_match">best_match</option>
+        <option value="ecmwf_ifs04">ecmwf_ifs04</option>
+        <option value="gem_global">gem_global</option>
+        <option value="gfs_global">gfs_global</option>
+        <option value="icon_eu">icon_eu</option>
+        <option value="icon_global">icon_global</option>
+        <option value="jma_gsm">jma_gsm</option>
+        <option value="meteofrance_arpege_europe">
+          meteofrance_arpege_europe
+        </option>
+        <option value="meteofrance_arpege_world">
+          meteofrance_arpege_world
+        </option>
+        <option value="all" selected>Все</option>
+      </select>
+      <label for="request_time">Время загрузки данных</label>
+        <input type="text" id="request_time" name="request_time" />
+      <label for="forecast_date">Временная точка прогноза</label>
+      <input type="date" id="forecast_date" name="forecast_date" />
+      <select name="forecast_time" id="time-request"></select>
       <input type="submit" value="Показать" />
     </form>
     <script type="module" src="/main.js"></script>

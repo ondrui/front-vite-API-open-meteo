@@ -23,30 +23,25 @@ form.addEventListener("submit", (event) => {
   event.preventDefault();
   const selectValue = dataForm.model.value;
   let formData = new FormData(form);
-  console.log(dataForm);
-  console.log(form);
-  console.log(selectValue);
   loadData(formData);
 });
 
 // Generate the chart
 const loadData = async (data) => {
-  const body = {
-    model: "ecmwf_ifs04",
-    forecast_time: "2023-06-30 07:00:00",
-  };
+  const strModels = "http://localhost:3002/models";
+  const strForecastTime = "http://localhost:3002/forecast_time";
   try {
     // const res = await fetch("http://localhost:3002/models");
-    const res = await fetch("http://localhost:3002/forecast_time", {
+    const res = await fetch(strModels, {
       method: "POST",
       body: data,
     });
     const datasets = await res.json();
 
-    const callback = (acc, { model, runtime, temp, forecast_time }) => {
+    const callback = (acc, { model, request_time, temp, forecast_time }) => {
       if (!acc[model]) acc[model] = {};
-      if (!acc[model][runtime]) acc[model][runtime] = [];
-      acc[model][runtime].push([Date.parse(forecast_time), temp]);
+      if (!acc[model][request_time]) acc[model][request_time] = [];
+      acc[model][request_time].push([Date.parse(forecast_time), temp]);
       return acc;
     };
     // { ...acc, [firstLetter]: [...(acc[firstLetter] || []), cur] };
@@ -175,3 +170,16 @@ const loadData = async (data) => {
     console.log("Error!" + error);
   }
 };
+
+//Создаем селект для выбора часа прогноза.
+const hours = new Array(24)
+  .fill(0)
+  .map((_, i) => `${i > 9 ? i : "0" + i}:00:00`);
+
+const timeSel = document.getElementById("time-request");
+hours.forEach((v) => {
+  const opt = document.createElement("option");
+  opt.value = v;
+  opt.innerHTML = v.split(":")[0];
+  timeSel.appendChild(opt);
+});
