@@ -1,12 +1,13 @@
-import "./style.css";
+/* eslint-disable camelcase */
+import './style.css';
 
-import Highcharts from "highcharts";
-import Exporting from "highcharts/modules/exporting";
-import Accessibility from "highcharts/modules/accessibility";
-import SeriesLabel from "highcharts/modules/series-label";
-import HighCL from "highcharts/themes/high-contrast-light";
-import moment from "moment";
-import * as mTZ from "moment-timezone";
+import Highcharts from 'highcharts';
+import Exporting from 'highcharts/modules/exporting';
+import Accessibility from 'highcharts/modules/accessibility';
+import SeriesLabel from 'highcharts/modules/series-label';
+import HighCL from 'highcharts/themes/high-contrast-light';
+import moment from 'moment';
+import * as mTZ from 'moment-timezone';
 
 window.moment = moment;
 mTZ();
@@ -16,29 +17,26 @@ Accessibility(Highcharts);
 SeriesLabel(Highcharts);
 HighCL(Highcharts);
 
-const form = document.getElementById("myForm");
-const dataForm = document.forms.myForm.elements;
-
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const selectValue = dataForm.model.value;
-  let formData = new FormData(form);
-  loadData(formData);
-});
+const form = document.getElementById('myForm');
 
 // Generate the chart
 const loadData = async (data) => {
-  const strModels = "http://localhost:3002/models";
-  const strForecastTime = "http://localhost:3002/forecast_time";
+  const strModels = 'http://localhost:3002/models';
+  // const strForecastTime = 'http://localhost:3002/forecast_time';
   try {
     // const res = await fetch("http://localhost:3002/models");
     const res = await fetch(strModels, {
-      method: "POST",
+      method: 'POST',
       body: data,
     });
     const datasets = await res.json();
-
-    const callback = (acc, { model, request_time, temp, forecast_time }) => {
+    // formatting data from server;
+    const callback = (acc, {
+      model,
+      request_time,
+      temp,
+      forecast_time,
+    }) => {
       if (!acc[model]) acc[model] = {};
       if (!acc[model][request_time]) acc[model][request_time] = [];
       acc[model][request_time].push([Date.parse(forecast_time), temp]);
@@ -47,103 +45,100 @@ const loadData = async (data) => {
     // { ...acc, [firstLetter]: [...(acc[firstLetter] || []), cur] };
 
     const resObj = datasets.reduce(callback, {});
+    //  flattening object
+    const getValues = (object, parentKeys = []) => Object.assign(
+      {},
+      ...Object.entries(object).map(([k, v]) => (v && typeof v === 'object' && v !== null && !Array.isArray(v)
+        ? getValues(v, [...parentKeys, k])
+        : { [[...parentKeys, k].join('.')]: v })),
+    );
+    // remove milliseconds and the suffix Z from datetime string ('.000Z')
+    const removeMsZ = (str, num) => str.slice(0, num);
+    // datasets for charts
+    const finished = Object.entries(getValues(resObj)).map(([key, value]) => ({
+      data: value,
+      name: removeMsZ(key, -5),
+    }));
 
-    const getValues = (object, parentKeys = []) => {
-      return Object.assign(
-        {},
-        ...Object.entries(object).map(([k, v]) =>
-          v && typeof v === "object" && v !== null && !Array.isArray(v)
-            ? getValues(v, [...parentKeys, k])
-            : { [[...parentKeys, k].join(".")]: v }
-        )
-      );
-    };
-
-    const finished = Object.entries(getValues(resObj)).map(([key, value]) => {
-      return { data: value, name: key.slice(0, -5) };
-    });
-
-    const options = {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone: "UTC",
+    const formattingPlotLinesText = () => {
+      const options = {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        timeZone: 'UTC',
+      };
+      return new Date().toLocaleString('ru', options);
     };
 
     Highcharts.setOptions({
       lang: {
         shortMonths: [
-          "янв.",
-          "февр.",
-          "мар.",
-          "апр.",
-          "мая",
-          "июня",
-          "июля",
-          "авг.",
-          "сент.",
-          "окт.",
-          "нояб.",
-          "дек.",
+          'янв.',
+          'февр.',
+          'мар.',
+          'апр.',
+          'мая',
+          'июня',
+          'июля',
+          'авг.',
+          'сент.',
+          'окт.',
+          'нояб.',
+          'дек.',
         ],
       },
     });
 
-    Highcharts.chart("container", {
+    Highcharts.chart('container', {
       time: {
-        timezone: "UTC",
+        timezone: 'UTC',
       },
       chart: {
-        type: "spline",
+        type: 'spline',
       },
       title: {
-        text: "Графики температуры по различным моделям",
+        text: 'Графики температуры по различным моделям',
       },
       legend: {
-        labelFormat: `<span style="color:{color}">{name}</span>`,
+        labelFormat: '<span style="color:{color}">{name}</span>',
       },
       tooltip: {
         shared: true,
-        formatter: function () {
-          let date = new Date(this.x);
-          let formatter = {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            hour: "numeric",
-            minute: "numeric",
-            timeZone: "UTC",
+        formatter() {
+          const date = new Date(this.x);
+          const options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            timeZone: 'UTC',
           };
           const arrMod = this.points
-            .sort(function (a, b) {
-              // Turn your strings into dates, and then subtract them
-              // to get a value that is either negative, positive, or zero.
-              return (
-                new Date(b.series.name.slice(4)) -
-                new Date(a.series.name.slice(4))
-              );
-            })
+            .sort((a, b) => (
+              new Date(b.series.name.slice(4))
+                - new Date(a.series.name.slice(4))
+            ))
             .map(
-              (point) =>
-                `<span style="color:${point.series.color}; font-size: 15px">\u25CF </span>${point.series.name} температура 2м: <b>${point.y} °C</b><br/>`
+              (point) => `<span style="color:${point.series.color}; font-size: 15px">\u25CF </span>${point.series.name} температура 2м: <b>${point.y} °C</b><br/>`,
             );
           const arr = [
-            `${date.toLocaleString("ru", formatter)}<br/>`,
+            `${date.toLocaleString('ru', options)}<br/>`,
             ...arrMod,
           ];
-          return arr.join("");
+          return arr.join('');
         },
         crosshairs: true,
       },
       xAxis: {
-        type: "datetime",
+        type: 'datetime',
         plotLines: [
           {
-            color: "red", // Color value
-            dashStyle: "ShortDot", // Style of the plot line. Default to solid
+            color: 'red', // Color value
+            dashStyle: 'ShortDot', // Style of the plot line. Default to solid
             value: new Date().getTime(), // Value of where the line will appear
             width: 2, // Width of the line
             label: {
-              text: new Date().toLocaleString("ru", options), // Content of the label.
+              text: formattingPlotLinesText(), // Content of the label.
               rotation: 0,
             },
           },
@@ -151,7 +146,7 @@ const loadData = async (data) => {
       },
       yAxis: {
         title: {
-          text: "Температура, °C",
+          text: 'Температура, °C',
         },
       },
       plotOptions: {
@@ -167,19 +162,27 @@ const loadData = async (data) => {
       series: finished,
     });
   } catch (error) {
-    console.log("Error!" + error);
+    // eslint-disable-next-line no-console
+    console.log(`Error!${error}`);
   }
 };
 
-//Создаем селект для выбора часа прогноза.
-const hours = new Array(24)
-  .fill(0)
-  .map((_, i) => `${i > 9 ? i : "0" + i}:00:00`);
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const formData = new FormData(form);
+  loadData(formData);
+});
 
-const timeSel = document.getElementById("time-request");
+// Создаем селект для выбора часа прогноза.
+const TOTAL_HOURS = 24;
+const hours = new Array(TOTAL_HOURS)
+  .fill(0)
+  .map((_, i) => `${i > 9 ? i : `0${i}`}:00:00`);
+
+const timeSel = document.getElementById('time-request');
 hours.forEach((v) => {
-  const opt = document.createElement("option");
+  const opt = document.createElement('option');
   opt.value = v;
-  opt.innerHTML = v.split(":")[0];
+  [opt.innerHTML] = v.split(':');
   timeSel.appendChild(opt);
 });
