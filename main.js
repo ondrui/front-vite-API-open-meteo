@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable camelcase */
 import './style.css';
 
@@ -17,26 +18,25 @@ Accessibility(Highcharts);
 SeriesLabel(Highcharts);
 HighCL(Highcharts);
 
-const form = document.getElementById('myForm');
+const oneModelForm = document.getElementById('oneModel');
+const allModelsForm = document.getElementById('allModels');
 
 // Generate the chart
-const loadData = async (data) => {
-  const strModels = 'http://localhost:3002/models';
-  // const strForecastTime = 'http://localhost:3002/forecast_time';
+const loadData = async (data, form) => {
+  const url =
+    form === 'one'
+      ? 'http://localhost:3002/forecast_time'
+      : 'http://localhost:3002/models';
+
   try {
     // const res = await fetch("http://localhost:3002/models");
-    const res = await fetch(strModels, {
+    const res = await fetch(url, {
       method: 'POST',
       body: data,
     });
     const datasets = await res.json();
     // formatting data from server;
-    const callback = (acc, {
-      model,
-      request_time,
-      temp,
-      forecast_time,
-    }) => {
+    const callback = (acc, { model, request_time, temp, forecast_time }) => {
       if (!acc[model]) acc[model] = {};
       if (!acc[model][request_time]) acc[model][request_time] = [];
       acc[model][request_time].push([Date.parse(forecast_time), temp]);
@@ -46,18 +46,26 @@ const loadData = async (data) => {
 
     const resObj = datasets.reduce(callback, {});
     //  flattening object
-    const getValues = (object, parentKeys = []) => Object.assign(
-      {},
-      ...Object.entries(object).map(([k, v]) => (v && typeof v === 'object' && v !== null && !Array.isArray(v)
-        ? getValues(v, [...parentKeys, k])
-        : { [[...parentKeys, k].join('.')]: v })),
-    );
-    // remove milliseconds and the suffix Z from datetime string ('.000Z')
-    const removeMsZ = (str, num) => str.slice(0, num);
+    const getValues = (object, parentKeys = []) =>
+      Object.assign(
+        {},
+        ...Object.entries(object).map(([k, v]) =>
+          v && typeof v === 'object' && v !== null && !Array.isArray(v)
+            ? getValues(v, [...parentKeys, k])
+            : { [[...parentKeys, k].join('.')]: v },
+        ),
+      );
+    /**
+     * Remove milliseconds and the suffix Z from datetime string ('.000Z').
+     * @param {string} str Date Time String. In format 'YYYY-MM-DDTHH:mm:ss.sssZ'
+     * @param {number} num default value -5.
+     * @returns
+     */
+    const removeMsZ = (str, num = -5) => str.slice(0, num);
     // datasets for charts
     const finished = Object.entries(getValues(resObj)).map(([key, value]) => ({
       data: value,
-      name: removeMsZ(key, -5),
+      name: removeMsZ(key),
     }));
 
     const formattingPlotLinesText = () => {
@@ -114,17 +122,16 @@ const loadData = async (data) => {
             timeZone: 'UTC',
           };
           const arrMod = this.points
-            .sort((a, b) => (
-              new Date(b.series.name.slice(4))
-                - new Date(a.series.name.slice(4))
-            ))
+            .sort(
+              (a, b) =>
+                new Date(b.series.name.slice(4)) -
+                new Date(a.series.name.slice(4)),
+            )
             .map(
-              (point) => `<span style="color:${point.series.color}; font-size: 15px">\u25CF </span>${point.series.name} температура 2м: <b>${point.y} °C</b><br/>`,
+              (point) =>
+                `<span style="color:${point.series.color}; font-size: 15px">\u25CF </span>${point.series.name} температура 2м: <b>${point.y} °C</b><br/>`,
             );
-          const arr = [
-            `${date.toLocaleString('ru', options)}<br/>`,
-            ...arrMod,
-          ];
+          const arr = [`${date.toLocaleString('ru', options)}<br/>`, ...arrMod];
           return arr.join('');
         },
         crosshairs: true,
@@ -167,10 +174,18 @@ const loadData = async (data) => {
   }
 };
 
-form.addEventListener('submit', (event) => {
+oneModelForm.addEventListener('submit', (event) => {
   event.preventDefault();
-  const formData = new FormData(form);
-  loadData(formData);
+  const formData = new FormData(oneModelForm);
+  console.log(...formData);
+  loadData(formData, 'one');
+});
+
+allModelsForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const formData = new FormData(allModelsForm);
+  console.log(...formData);
+  loadData(formData, 'all');
 });
 
 // Создаем селект для выбора часа прогноза.
